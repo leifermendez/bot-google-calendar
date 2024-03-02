@@ -4,6 +4,7 @@ import { BaileysProvider } from '@bot-whatsapp/provider-baileys'
 import AIClass from './services/ai';
 import flow from './flows';
 
+const PORT = process.env.PORT ?? 3001
 const ai = new AIClass(process.env.OPEN_API_KEY, 'gpt-3.5-turbo-16k')
 
 const main = async () => {
@@ -15,6 +16,7 @@ const main = async () => {
         flow,
     }, { extensions: { ai } })
 
+    provider.initHttpServer(+PORT)
     console.log(`Listo para enviar`)
 
 }
