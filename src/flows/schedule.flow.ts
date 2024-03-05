@@ -33,7 +33,7 @@ INSTRUCTIONS:
 - Review in detail the conversation history and calculate the day, date and time that does not conflict with another time already scheduled.
 - Ideal short answers to send by whatsapp with emojis
 -----------------------------
-Useful answer in first person:`
+Useful answer in first person (in spanish):`
 
 const generateSchedulePrompt = (summary: string, history: string) => {
     const nowDate = getFullCurrentDate()

@@ -38,7 +38,7 @@ Some non-literal examples might be:
 - Responds in Spanish language.
 Maintain a professional tone and always respond in the first person. Your answers should be suitable for sending via WhatsApp, possibly with the use of emojis to keep the conversation friendly and accessible.
 
-Helpful response:`
+Helpful response (in spanish):`
 
 export const generateConversationPrompt = (history: string, question: string) => {
     return PROMPT_QA
