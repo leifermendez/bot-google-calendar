@@ -45,7 +45,7 @@ const flowConfirm = addKeyword(EVENTS.ACTION).addAction(async (_, { flowDynamic 
             role: 'system',
             content: generatePromptToFormatDate(history)
         }
-    ], 'gpt-4')
+    ], 'gpt-3.5-turbo')
 
     await handleHistory({ content: text, role: 'assistant' }, state)
     await flowDynamic(`¿Me confirmas fecha y hora?: ${text}. **cancelar** para iniciar de nuevo`)

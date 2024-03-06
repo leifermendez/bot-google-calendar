@@ -1,4 +1,3 @@
-import { format, addMinutes, parse, isValid } from 'date-fns'
 import { MAKE_ADD_TO_CALENDAR, MAKE_GET_FROM_CALENDAR } from 'src/config'
 
 /**
@@ -11,7 +10,7 @@ const getCurrentCalendar = async (): Promise<string> => {
     const list = json.reduce((prev, current) => {
         return prev += [
             `Reserved space (not available): ${current.fecha}\n `
-        ].join(' ')
+        ].join('')
     }, '')
     return list
 }

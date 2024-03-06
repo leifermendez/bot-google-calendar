@@ -5,16 +5,18 @@ import { flowSeller } from "../flows/seller.flow"
 import { flowSchedule } from "../flows/schedule.flow"
 import { flowConfirm } from "../flows/confirm.flow"
 
-const PROMPT_DISCRIMINATOR = `As an advanced artificial intelligence, your mission is to interpret the context of a conversation and decide which of the following actions is the most appropriate to take:
+const PROMPT_DISCRIMINATOR = `As advanced artificial intelligence, your task is to analyze the context of a conversation and determine the most appropriate action based on its description.
 
-Conversation History={HISTORY}
+Conversation history (Customer/Seller):
+-------------------
+{HISTORY}
+-------------------
+Possible actions to select:
+1. SCHEDULE: Select this action if the customer shows intent to schedule an appointment.
+2. TALK: Select this action if the client seems to want to ask a question or needs more information.
+3. CONFIRM: This action should only be selected if there is a previous response from the salesperson confirming their availability and the customer has expressed their intention to schedule an appointment, providing the exact date, day and time. It is essential to avoid conflicts with other appointments, especially those scheduled for the same day.
 
-Possible actions to perform:
-1. SCHEDULE: This action should be performed when the customer expresses a desire to schedule an appointment.
-2. TALK: This action should be performed when the customer wishes to ask a question or needs more information.
-3. CONFIRM: This action should only be performed when you have secured the intent to confirm from both the customer and the salesperson, providing an exact date, day and time with no scheduling conflicts.
-
-Your goal is to understand the customer's intent and select the most appropriate action in response to their statement.
+Your task is to understand the customer's intent and select the most appropriate action in response to their statement, taking special care to avoid scheduling conflicts. Remember, you cannot select "CONFIRM" unless there is a prior conversation with the salesperson where a time and date is agreed upon.
 
 Ideal response (SCHEDULE|TALK|CONFIRM):`
 

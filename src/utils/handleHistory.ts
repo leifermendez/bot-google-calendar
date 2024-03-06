@@ -8,17 +8,17 @@ const handleHistory = async (inside: History, _state: BotStateStandAlone) => {
     await _state.update({ history })
 }
 
-const getHistory = (_state: BotStateStandAlone, k = 6) => {
+const getHistory = (_state: BotStateStandAlone, k = 16) => {
     const history = _state.get<History[]>('history') ?? []
     const limitHistory = history.slice(-k)
     return limitHistory
 }
 
-const getHistoryParse = (_state: BotStateStandAlone, k = 6): string => {
+const getHistoryParse = (_state: BotStateStandAlone, k = 16): string => {
     const history = _state.get<History[]>('history') ?? []
     const limitHistory = history.slice(-k)
     return limitHistory.reduce((prev, current) => {
-        const msg = current.role === 'user' ? `\nCliente: "${current.content}"` : `\nVendedor: "${current.content}"`
+        const msg = current.role === 'user' ? `Cliente: "${current.content}"` : `\nVendedor: "${current.content}"`
         prev += msg
         return prev
     }, ``)

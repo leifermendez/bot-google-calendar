@@ -5,35 +5,31 @@ import { generateTimer } from "../utils/generateTimer";
 import { getCurrentCalendar } from "../services/calendar";
 import { getFullCurrentDate } from "src/utils/currentDate";
 
-const PROMPT_SCHEDULE = `As an artificial intelligence engineer specializing in meeting scheduling, your goal is to analyze the conversation and determine the client's intent to schedule a meeting, as well as their date and time preference. 
+const PROMPT_SCHEDULE = `As an artificial intelligence engineer specializing in meeting scheduling, your goal is to analyze the conversation and determine the client's intention to schedule a meeting, as well as their preferred date and time.
 
 Today's date: {CURRENT_DAY}
-
-MEETING GUIDELINES.
------------------------------------
-{DATABASE}
 
 Meetings already scheduled:
 -----------------------------------
 {AGENDA}
 
-Conversation History:
+Conversation history:
 -----------------------------------
 {HISTORY}
 
-Examples of appropriate responses to suggest times and check availability:
-----------------------------------
-"Of course, I have a space available tomorrow, what time is most convenient for you?"
-"Yes, I have a slot available today, what time is most convenient for you?"
-"Certainly, I have several slots available this week. Please let me know the day and time you prefer."
-
 INSTRUCTIONS:
 - DO NOT greet.
-- If there is availability you should tell the user to confirm.
-- Review in detail the conversation history and calculate the day, date and time that does not conflict with another time already scheduled.
-- Ideal short answers to send by whatsapp with emojis
------------------------------
-Useful answer in first person (in spanish):`
+- If there is availability you must tell the user to confirm.
+- Check in detail the conversation history and calculate the day, date and time that does not conflict with another already scheduled.
+- Ideal short answers to send by WhatsApp with emojis.
+
+Examples of suitable answers to suggest times and check availability:
+----------------------------------
+"Sure, I have a space available tomorrow, what time works best for you?".
+"Yes, I have a space available today, what time works best for you?".
+"Sure, I have several spaces available this week. Please let me know the day and time you prefer."
+
+Helpful first-person response (in Spanish):`
 
 const generateSchedulePrompt = (summary: string, history: string) => {
     const nowDate = getFullCurrentDate()
@@ -67,7 +63,7 @@ const flowSchedule = addKeyword(EVENTS.ACTION).addAction(async (ctx, { extension
             role: 'user',
             content: `Cliente pregunta: ${ctx.body}`
         }
-    ], 'gpt-4')
+    ], 'gpt-4-0125-preview')
 
     await handleHistory({ content: text, role: 'assistant' }, state)
 
