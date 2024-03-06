@@ -18,7 +18,7 @@ const getHistoryParse = (_state: BotStateStandAlone, k = 16): string => {
     const history = _state.get<History[]>('history') ?? []
     const limitHistory = history.slice(-k)
     return limitHistory.reduce((prev, current) => {
-        const msg = current.role === 'user' ? `Cliente: "${current.content}"` : `\nVendedor: "${current.content}"`
+        const msg = current.role === 'user' ? `Customer: "${current.content}"` : `\nSeller: "${current.content}"\n`
         prev += msg
         return prev
     }, ``)

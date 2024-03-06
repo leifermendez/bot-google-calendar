@@ -14,7 +14,7 @@ Conversation history (Customer/Seller):
 Possible actions to select:
 1. SCHEDULE: Select this action if the customer shows intent to schedule an appointment.
 2. TALK: Select this action if the client seems to want to ask a question or needs more information.
-3. CONFIRM: This action should only be selected if there is a previous response from the salesperson confirming their availability and the customer has expressed their intention to schedule an appointment, providing the exact date, day and time. It is essential to avoid conflicts with other appointments, especially those scheduled for the same day.
+3. CONFIRM: This action should only be selected if there is a previous response from the "Seller" confirming their availability and the customer has expressed their intention to schedule an appointment, providing the exact date, day and time. It is essential to avoid conflicts with other appointments, especially those scheduled for the same day.
 
 Your task is to understand the customer's intent and select the most appropriate action in response to their statement, taking special care to avoid scheduling conflicts. Remember, you cannot select "CONFIRM" unless there is a prior conversation with the salesperson where a time and date is agreed upon.
 
@@ -33,7 +33,7 @@ export default async (_: BotContext, { state, gotoFlow, extensions }: BotMethods
             role: 'system',
             content: prompt.replace('{HISTORY}', history)
         }
-    ])
+    ], 'gpt-4-0613')
 
 
     console.log(`[Intention]:`, intention)
