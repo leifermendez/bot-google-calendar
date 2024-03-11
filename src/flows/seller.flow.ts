@@ -1,90 +1,66 @@
-import { addKeyword, EVENTS } from "@bot-whatsapp/bot";
+import { addKeyword, EVENTS } from "@builderbot/bot";
 import { generateTimer } from "../utils/generateTimer";
 import { getHistoryParse, handleHistory } from "../utils/handleHistory";
 import AIClass from "../services/ai";
 import { getFullCurrentDate } from "src/utils/currentDate";
-import { query } from "src/stack-ai";
+import { pdfQuery } from "src/services/pdf";
 
-const PROMPT_QA = `Given the following conversation and a follow-up question, rephrase the follow-up question to be a stand-alone question.
-Conversation:
--------------
+const PROMPT_SELLER = `Como experto en ventas con aproximadamente 15 años de experiencia en embudos de ventas y generación de leads, tu tarea es mantener una conversación agradable, responder a las preguntas del cliente sobre nuestros productos y, finalmente, guiarlos para reservar una cita. Tus respuestas deben basarse únicamente en el contexto proporcionado:
+
+### DÍA ACTUAL
+{CURRENT_DAY}
+
+### HISTORIAL DE CONVERSACIÓN (Cliente/Vendedor)
 {HISTORY}
--------------
-Follow-up input: {question}
-Stand-alone question:`
 
-const PROMPT_SELLER = `As a sales expert with approximately 15 years of experience in sales funnels and lead generation, your task is to maintain a pleasant conversation, answer the customer's questions about our products and, finally, guide them to book an appointment.
+### BASE DE DATOS
+{DATABASE}
 
-You must base your answers solely on the context provided:
--------
-CURRENT_DAY={CURRENT_DAY}
-------- 
--------
-HISTORY={HISTORY}
-------- 
-To provide more useful answers, you can use the information provided in the database:
--------
-DATABASE={DATABASE}
-------
-Question:{question}
+Para proporcionar respuestas más útiles, puedes utilizar la información proporcionada en la base de datos. El contexto es la única información que tienes. Ignora cualquier cosa que no esté relacionada con el contexto.
 
-The context is the only information you have. Ignore anything that is not related to the context.
+### EJEMPLOS DE RESPUESTAS IDEALES:
 
-Some non-literal examples might be:
+- buenas bienvenido a..
+- un gusto saludarte en..
+- por supuesto tenemos eso y ...
 
-- Greet the user and provide the information they need, if you have it.
-- Rephrase and ask if you don't have enough details or if the context doesn't show the information.
-- Guide the user to book an appointment.
-- Responds in Spanish language.
-Maintain a professional tone and always respond in the first person. Your answers should be suitable for sending via WhatsApp, possibly with the use of emojis to keep the conversation friendly and accessible.
+### INTRUCCIONES
+- Mantén un tono profesional y siempre responde en primera persona.
+- NO ofrescas promociones que no existe en la BASE DE DATOS
 
-Helpful response (in spanish):`
+Respuesta útil adecuadas para enviar por WhatsApp (en español):`
 
-export const generateConversationPrompt = (history: string, question: string) => {
-    return PROMPT_QA
-        .replace('{HISTORY}', history)
-        .replace('{question}', question)
-}
 
-export const generatePromptSeller = (history: string) => {
+export const generatePromptSeller = (history: string, database:string) => {
     const nowDate = getFullCurrentDate()
     return PROMPT_SELLER
         .replace('{HISTORY}', history)
         .replace('{CURRENT_DAY}', nowDate)
+        .replace('{DATABASE}', database)
 };
 
 const flowSeller = addKeyword(EVENTS.ACTION)
     .addAnswer(`⏱️`)
-    .addAction(async (ctx, { state, flowDynamic, extensions, globalState }) => {
+    .addAction(async (_, { state, flowDynamic, extensions }) => {
         try {
 
             const ai = extensions.ai as AIClass
             const history = getHistoryParse(state)
 
-            const promptQA = generateConversationPrompt(history, ctx.body)
-            const promptInfo = generatePromptSeller(history)
+            const dataBase = await pdfQuery(_.body)
+            // const promptQA = generateConversationPrompt(history, ctx.body)
+            console.log({dataBase})
+            const promptInfo = generatePromptSeller(history, dataBase)
 
-            const responseQA = await ai.createChat([
+            const response = await ai.createChat([
                 {
                     role: 'system',
-                    content: promptQA
+                    content: promptInfo
                 }
             ])
 
-            const dbQuery = await query({ "in-0": responseQA })
-            const promptInfoMerge = promptInfo
-                .replace(`{DATABASE}`, dbQuery)
-                .replace(`{question}`, responseQA)
-
-            const responseInfo = await ai.createChat([
-                {
-                    role: 'system',
-                    content: promptInfoMerge
-                }
-            ])
-            console.log({ dbQuery, responseQA, promptInfo: promptInfoMerge, responseInfo })
-            await handleHistory({ content: responseInfo, role: 'assistant' }, state)
-            const chunks = responseInfo.split(/(?<!\d)\.\s+/g);
+            await handleHistory({ content: response, role: 'assistant' }, state)
+            const chunks = response.split(/(?<!\d)\.\s+/g);
             for (const chunk of chunks) {
                 await flowDynamic([{ body: chunk.trim(), delay: generateTimer(150, 250) }]);
             }

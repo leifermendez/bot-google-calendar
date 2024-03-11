@@ -1,77 +1,80 @@
-import { addKeyword, EVENTS } from "@bot-whatsapp/bot";
+import { addKeyword, EVENTS } from "@builderbot/bot";
 import AIClass from "../services/ai";
 import { getHistoryParse, handleHistory } from "../utils/handleHistory";
 import { generateTimer } from "../utils/generateTimer";
 import { getCurrentCalendar } from "../services/calendar";
 import { getFullCurrentDate } from "src/utils/currentDate";
+import { flowConfirm } from "./confirm.flow";
+import { addMinutes, isWithinInterval, format, parse } from "date-fns";
 
-const PROMPT_SCHEDULE = `As an artificial intelligence engineer specializing in meeting scheduling, your goal is to analyze the conversation and determine the client's intention to schedule a meeting, as well as their preferred date and time.
+const DURATION_MEET = process.env.DURATION_MEET ?? 45
 
-Today's date: {CURRENT_DAY}
+const PROMPT_FILTER_DATE = `
+### Contexto
+Eres un asistente de inteligencia artificial. Tu propósito es determinar la fecha y hora que el cliente quiere, en el formato yyyy/MM/dd HH:mm:ss.
 
-Meetings already scheduled:
------------------------------------
-{AGENDA}
+### Fecha y Hora Actual:
+{CURRENT_DAY}
 
-Conversation history:
------------------------------------
+### Registro de Conversación:
 {HISTORY}
 
-INSTRUCTIONS:
-- DO NOT greet.
-- If there is availability you must tell the user to confirm.
-- Check in detail the conversation history and calculate the day, date and time that does not conflict with another already scheduled.
-- Ideal short answers to send by WhatsApp with emojis.
+Asistente: "{respuesta en formato (yyyy/MM/dd HH:mm:ss)}"
+`;
 
-Examples of suitable answers to suggest times and check availability:
-----------------------------------
-"Sure, I have a space available tomorrow, what time works best for you?".
-"Yes, I have a space available today, what time works best for you?".
-"Sure, I have several spaces available this week. Please let me know the day and time you prefer."
-
-Helpful first-person response (in Spanish):`
-
-const generateSchedulePrompt = (summary: string, history: string) => {
-    const nowDate = getFullCurrentDate()
-    const mainPrompt = PROMPT_SCHEDULE
-        .replace('{AGENDA}', summary)
+const generatePromptFilter = (history: string) => {
+    const nowDate = getFullCurrentDate();
+    const mainPrompt = PROMPT_FILTER_DATE
         .replace('{HISTORY}', history)
-        .replace('{CURRENT_DAY}', nowDate)
+        .replace('{CURRENT_DAY}', nowDate);
 
-    return mainPrompt
+    return mainPrompt;
 }
 
-/**
- * Hable sobre todo lo referente a agendar citas, revisar historial saber si existe huecos disponibles
- */
-const flowSchedule = addKeyword(EVENTS.ACTION).addAction(async (ctx, { extensions, state, flowDynamic }) => {
-    await flowDynamic('dame un momento para consultar la agenda...')
-    const ai = extensions.ai as AIClass
-    const history = getHistoryParse(state)
+const flowSchedule = addKeyword(EVENTS.ACTION).addAction(async (ctx, { extensions, state, flowDynamic, endFlow }) => {
+    await flowDynamic('Dame un momento para consultar la agenda...');
+    const ai = extensions.ai as AIClass;
+    const history = getHistoryParse(state);
     const list = await getCurrentCalendar()
-    const promptSchedule = generateSchedulePrompt(list?.length ? list : 'ninguna', history)
+    console.log({list})
+    const listParse = list
+        .map((d) => parse(d, 'yyyy/MM/dd HH:mm:ss', new Date()))
+        .map((fromDate) => ({ fromDate, toDate: addMinutes(fromDate, +DURATION_MEET) }));
 
-    console.log(`-------------------------agendar---------------------------------`)
-    console.log(promptSchedule)
+    const promptFilter = generatePromptFilter(history);
 
-    const text = await ai.createChat([
+    const { date } = await ai.desiredDateFn([
         {
             role: 'system',
-            content: promptSchedule
-        },
-        {
-            role: 'user',
-            content: `Cliente pregunta: ${ctx.body}`
+            content: promptFilter
         }
-    ], 'gpt-4')
+    ]);
 
-    await handleHistory({ content: text, role: 'assistant' }, state)
+    const desiredDate = parse(date, 'yyyy/MM/dd HH:mm:ss', new Date());
 
-    const chunks = text.split(/(?<!\d)\.\s+/g);
+    const isDateAvailable = listParse.every(({ fromDate, toDate }) => !isWithinInterval(desiredDate, { start: fromDate, end: toDate }));
+
+    if(!isDateAvailable){
+        const m = 'Lo siento, esa hora ya está reservada. ¿Alguna otra fecha y hora?';
+        await flowDynamic(m);
+        await handleHistory({ content: m, role: 'assistant' }, state);
+        return endFlow()
+    }
+
+    const formattedDateFrom = format(desiredDate, 'hh:mm a');
+    const formattedDateTo = format(addMinutes(desiredDate, +DURATION_MEET), 'hh:mm a');
+    const message = `¡Perfecto! Tenemos disponibilidad de ${formattedDateFrom} a ${formattedDateTo} el día ${format(desiredDate, 'dd/MM/yyyy')}. ¿Confirmo tu reserva? *si*`;
+    await handleHistory({ content: message, role: 'assistant' }, state);
+    await state.update({ desiredDate })
+
+    const chunks = message.split(/(?<!\d)\.\s+/g);
     for (const chunk of chunks) {
         await flowDynamic([{ body: chunk.trim(), delay: generateTimer(150, 250) }]);
     }
-
+}).addAction({capture:true}, async ({body},{gotoFlow, flowDynamic, state}) => {
+    if(body.toLowerCase().includes('si')) return gotoFlow(flowConfirm)
+    await flowDynamic('¿Alguna otra fecha y hora?')
+    await state.update({desiredDate:null})
 })
 
 export { flowSchedule }

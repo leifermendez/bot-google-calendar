@@ -1,4 +1,4 @@
-import { BotStateStandAlone } from "@bot-whatsapp/bot/dist/types"
+import { BotStateStandAlone } from "@builderbot/bot/dist/types"
 
 export type History = { role: 'user' | 'assistant', content: string }
 
@@ -8,13 +8,13 @@ const handleHistory = async (inside: History, _state: BotStateStandAlone) => {
     await _state.update({ history })
 }
 
-const getHistory = (_state: BotStateStandAlone, k = 16) => {
+const getHistory = (_state: BotStateStandAlone, k = 15) => {
     const history = _state.get<History[]>('history') ?? []
     const limitHistory = history.slice(-k)
     return limitHistory
 }
 
-const getHistoryParse = (_state: BotStateStandAlone, k = 16): string => {
+const getHistoryParse = (_state: BotStateStandAlone, k = 15): string => {
     const history = _state.get<History[]>('history') ?? []
     const limitHistory = history.slice(-k)
     return limitHistory.reduce((prev, current) => {

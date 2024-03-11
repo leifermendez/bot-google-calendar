@@ -1,9 +1,7 @@
-export const MAKE_GET_PROMPTS_TEMPLATE = process.env.MAKE_GET_PROMPTS_TEMPLATE ?? ''
-
 export const MAKE_ADD_TO_CALENDAR = process.env.MAKE_ADD_TO_CALENDAR ?? ''
-
 export const MAKE_GET_FROM_CALENDAR = process.env.MAKE_GET_FROM_CALENDAR ?? ''
 
-export const STACK_AI_URL = process.env.STACK_AI_URL ?? ''
+export const CHATPDF_API = process.env.CHATPDF_API ?? ''
+export const CHATPDF_KEY = process.env.CHATPDF_KEY ?? ''
 
-export const STACK_AI_API = process.env.STACK_AI_API ?? ''
+export const DURATION_MEET = process.env.DURATION_MEET ?? ''

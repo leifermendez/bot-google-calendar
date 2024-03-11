@@ -3,3 +3,4 @@ node_modules
 *.log
 *.png
 *_sessions
+dist/*

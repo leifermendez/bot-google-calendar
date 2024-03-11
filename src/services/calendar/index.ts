@@ -4,25 +4,24 @@ import { MAKE_ADD_TO_CALENDAR, MAKE_GET_FROM_CALENDAR } from 'src/config'
  * get calendar
  * @returns 
  */
-const getCurrentCalendar = async (): Promise<string> => {
+const getCurrentCalendar = async (): Promise<string[]> => {
     const dataCalendarApi = await fetch(MAKE_GET_FROM_CALENDAR)
-    const json: any[] = await dataCalendarApi.json()
+    const json: { date: string, name: string }[] = await dataCalendarApi.json()
+    console.log({ json })
     const list = json.reduce((prev, current) => {
-        return prev += [
-            `Reserved space (not available): ${current.fecha}\n `
-        ].join('')
-    }, '')
+        prev.push(current.date)
+        return prev
+    }, [])
     return list
 }
 
 /**
  * add to calendar
- * @param text 
+ * @param body 
  * @returns 
  */
-const appToCalendar = async (text: string, phone: string) => {
+const appToCalendar = async (payload: { name: string, email: string, startDate: string, endData: string, phone: string }) => {
     try {
-        const payload = { ...JSON.parse(text), phone }
         console.log(payload)
         const dataApi = await fetch(MAKE_ADD_TO_CALENDAR, {
             method: 'POST',

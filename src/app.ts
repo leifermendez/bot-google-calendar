@@ -1,24 +1,21 @@
 import 'dotenv/config'
-import { createBot, MemoryDB, createProvider } from '@bot-whatsapp/bot'
-import { BaileysProvider } from '@bot-whatsapp/provider-baileys'
+import { createBot, MemoryDB } from '@builderbot/bot'
 import AIClass from './services/ai';
 import flow from './flows';
+import { providerTelegram } from './provider/telegram';
 
 const PORT = process.env.PORT ?? 3001
-const ai = new AIClass(process.env.OPEN_API_KEY, 'gpt-3.5-turbo-16k')
+const ai = new AIClass(process.env.OPEN_API_KEY, 'gpt-3.5-turbo')
 
 const main = async () => {
-    const provider = createProvider(BaileysProvider)
 
-    await createBot({
+    const { httpServer } = await createBot({
         database: new MemoryDB(),
-        provider,
+        provider: providerTelegram,
         flow,
     }, { extensions: { ai } })
 
-    provider.initHttpServer(+PORT)
-    console.log(`Listo para enviar`)
-
+    httpServer(+PORT)
+    console.log(`Ready for ${PORT}`)
 }
-
 main()
