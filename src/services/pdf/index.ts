@@ -1,4 +1,4 @@
-import { CHATPDF_API, CHATPDF_KEY } from "src/config"
+import { CHATPDF_API, CHATPDF_KEY, CHATPDF_SRC } from "src/config"
 
 /**
  * 
@@ -6,7 +6,6 @@ import { CHATPDF_API, CHATPDF_KEY } from "src/config"
  */
 export const pdfQuery = async (query:string): Promise<string> => {
     try {
-        console.log({CHATPDF_API, CHATPDF_KEY})
         const dataApi = await fetch(CHATPDF_API, {
             method: 'POST',
             headers: {
@@ -14,7 +13,7 @@ export const pdfQuery = async (query:string): Promise<string> => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                "sourceId": "src_0bhzvLNYiSVK3jykzSIkH",
+                "sourceId": CHATPDF_SRC,
                 "messages": [
                     {
                         "role": "user",

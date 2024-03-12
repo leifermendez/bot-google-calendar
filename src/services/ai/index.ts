@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import fs from "fs";
 import { ChatCompletionMessageParam } from "openai/resources/chat";
 
 
@@ -14,6 +15,29 @@ class AIClass {
 
         this.model = _model
     }
+
+    /**
+     * 
+     * @param path 
+     * @returns 
+     */
+    voiceToText = async (path: fs.PathLike) => {
+        if (!fs.existsSync(path)) {
+            throw new Error("No se encuentra el archivo");
+        }
+    
+        try {
+            const transcription = await this.openai.audio.transcriptions.create({
+                file: fs.createReadStream(path),
+                model: "whisper-1"
+            })
+    
+            return transcription.text;
+        } catch (err) {
+            console.log(err.response.data)
+            return "ERROR";
+        }
+    };
 
     /**
      * 
@@ -76,8 +100,8 @@ class AIClass {
                                     items: {
                                         type: "string",
                                         enum: [
-                                            "SCHEDULE",
-                                            "TALK",
+                                            "PROGRAMAR",
+                                            "HABLAR",
                                         ]
                                     },
                                 },

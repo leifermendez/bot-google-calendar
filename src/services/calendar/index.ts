@@ -8,7 +8,7 @@ const getCurrentCalendar = async (): Promise<string[]> => {
     const dataCalendarApi = await fetch(MAKE_GET_FROM_CALENDAR)
     const json: { date: string, name: string }[] = await dataCalendarApi.json()
     console.log({ json })
-    const list = json.reduce((prev, current) => {
+    const list = json.filter(({date, name}) => !!date && !!name).reduce((prev, current) => {
         prev.push(current.date)
         return prev
     }, [])
@@ -22,7 +22,6 @@ const getCurrentCalendar = async (): Promise<string[]> => {
  */
 const appToCalendar = async (payload: { name: string, email: string, startDate: string, endData: string, phone: string }) => {
     try {
-        console.log(payload)
         const dataApi = await fetch(MAKE_ADD_TO_CALENDAR, {
             method: 'POST',
             headers: {

@@ -34,10 +34,8 @@ const flowConfirm = addKeyword(EVENTS.ACTION).addAction(async (_, { flowDynamic 
             phone: ctx.from
         }
 
-
         await appToCalendar(dateObject)
         
-        console.log(`Enviar....`, dateObject)
         clearHistory(state)
         await flowDynamic('Listo! agendado Buen dia')
     })

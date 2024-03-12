@@ -36,7 +36,7 @@ const flowSchedule = addKeyword(EVENTS.ACTION).addAction(async (ctx, { extension
     const ai = extensions.ai as AIClass;
     const history = getHistoryParse(state);
     const list = await getCurrentCalendar()
-    console.log({list})
+
     const listParse = list
         .map((d) => parse(d, 'yyyy/MM/dd HH:mm:ss', new Date()))
         .map((fromDate) => ({ fromDate, toDate: addMinutes(fromDate, +DURATION_MEET) }));
@@ -72,7 +72,9 @@ const flowSchedule = addKeyword(EVENTS.ACTION).addAction(async (ctx, { extension
         await flowDynamic([{ body: chunk.trim(), delay: generateTimer(150, 250) }]);
     }
 }).addAction({capture:true}, async ({body},{gotoFlow, flowDynamic, state}) => {
+
     if(body.toLowerCase().includes('si')) return gotoFlow(flowConfirm)
+    
     await flowDynamic('¿Alguna otra fecha y hora?')
     await state.update({desiredDate:null})
 })

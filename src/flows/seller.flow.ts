@@ -41,14 +41,13 @@ export const generatePromptSeller = (history: string, database:string) => {
 
 const flowSeller = addKeyword(EVENTS.ACTION)
     .addAnswer(`⏱️`)
-    .addAction(async (_, { state, flowDynamic, extensions }) => {
+    .addAction(async (ctx, { state, flowDynamic, extensions }) => {
         try {
 
             const ai = extensions.ai as AIClass
             const history = getHistoryParse(state)
 
-            const dataBase = await pdfQuery(_.body)
-            // const promptQA = generateConversationPrompt(history, ctx.body)
+            const dataBase = await pdfQuery(ctx.body)
             console.log({dataBase})
             const promptInfo = generatePromptSeller(history, dataBase)
 
