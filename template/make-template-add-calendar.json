@@ -366,7 +366,7 @@
                 "mode": "select",
                 "values": {
                     "0": "{{1.name}}",
-                    "1": "{{1.startDate}}",
+                    "1": "{{formatDate(1.startDate; \"yyyy/MM/DD HH:mm:ss\")}}",
                     "2": "{{1.email}}",
                     "3": "{{1.phone}}"
                 },
